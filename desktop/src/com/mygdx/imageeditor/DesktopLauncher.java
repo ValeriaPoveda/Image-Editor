@@ -11,6 +11,7 @@ public class DesktopLauncher {
 		config.setForegroundFPS(60);
 		config.setTitle("ImageEditor");
 		config.setWindowedMode(584, 480);
+		System.out.println("Project made by: Valeria Poveda and Adrian Ninanya");
 		new Lwjgl3Application(new ImageEditor(), config);
 	}
 }
