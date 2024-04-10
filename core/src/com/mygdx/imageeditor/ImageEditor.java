@@ -10,46 +10,31 @@ import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class ImageEditor extends ApplicationAdapter {
-    SpriteBatch batch;
-    Texture img;
-    Pixmap rectangleMap;
-    Button button1;
-    Button button2;
-    Button button3;
-    Button button4;
-    Button button5;
-    public Vector2 _screenSize;
     public static ImageEditor Instance;
+    public Vector2 _screenSize;
+    public Array <Rec2D> Rectangles = new Array<Rec2D>();
+    private editWindow _editWindow;
+    SpriteBatch batch;
+   
   
-    public ImageEditor () {
-        Instance = this;
-    }
     
 
     @Override
     public void create () {
-        batch = new SpriteBatch();
-        _screenSize = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        Instance = this;
         InputManager inputManager = new InputManager();
         Gdx.input.setInputProcessor(inputManager);
         
-        
-        Vector2 rectangleScale = new Vector2(100,100);
-    
-        button1 = new Button(rectangleScale,new Vector2(_screenSize.x / 2f - rectangleScale.x*2, _screenSize.y / 2f - rectangleScale.y / 4f),Color.RED);
-        
-        button2 = new Button(rectangleScale, new Vector2(_screenSize.x / 2f + rectangleScale.x, _screenSize.y / 2f - rectangleScale.y / 4f),Color.BLUE);
-//        
-//        button3 = new Button(rectangleScale,new Vector2(_screenSize.x / 2f - rectangleScale.x * 2, _screenSize.y / 2f - rectangleScale.y / 2f),Color.ORANGE);
-//        
-//        button4 = new Button(rectangleScale, new Vector2(_screenSize.x / 2f + rectangleScale.x, _screenSize.y / 2f - rectangleScale.y / 2f),Color.GREEN);
-//        
-//        button5 = new Button(rectangleScale, new Vector2(_screenSize.x / 2f + rectangleScale.x, _screenSize.y / 2f - rectangleScale.y / 2f),Color.WHITE);
-//        
-        
+        batch = new SpriteBatch();
+        _screenSize = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        Vector2 editWindowSize = new Vector2(500, _screenSize.y - 50);
+        _editWindow = new editWindow(editWindowSize, new Vector2(_screenSize.x - editWindowSize.x, 0), Color.GRAY);
+        Button b = new Button (new Vector2(50,50), Vector2.Zero, Color.GOLD);
         CollisionManager collisionManager = new CollisionManager();
              
     }
@@ -58,10 +43,10 @@ public class ImageEditor extends ApplicationAdapter {
     public void render () {
         ScreenUtils.clear(0f, 0f, 0f, 1);
         batch.begin();
-      //if(rectangle.position.x is greater than the width of the screen)
-     // rectangle.velocity.x *= -1;
-        batch.draw(button1.RecTexture, button1.Position.x, button1.Position.y);
-        batch.draw(button2.RecTexture, button2.Position.x, button2.Position.y);
+        for(Rec2D rec : Rectangles) {
+           batch.draw(rec.RecTexture, rec.Position.x, rec.Position.y, rec.Scale.x, rec.Scale.y);
+        }
+        batch.draw(_editWindow.DoodleTexture, _editWindow.Position.x, _editWindow.Position.y, _editWindow.Scale.x, _editWindow.Scale.y);
         batch.end();
     }
 

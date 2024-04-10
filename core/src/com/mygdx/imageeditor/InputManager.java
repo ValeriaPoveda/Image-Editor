@@ -5,27 +5,51 @@ import com.badlogic.gdx.utils.Array;
 
 public class InputManager implements InputProcessor {
     public Array <Button> Buttons = new Array <Button>();
+    public Array<IClickable> Clickables = new Array<IClickable>();
+    public Array<IHoverable> Hoverables = new Array<IHoverable>();
     public static InputManager Instance;
-    
+    private IHoverable _currentlyHovered;
+    private IClickable _currentlyClicked;
+
     public InputManager() {
-       Instance = this;
+        Instance = this;
     }
 
     public boolean keyDown(int keycode) {return false;}
     public boolean keyUp(int keycode) {return false;}
     public boolean keyTyped(char character) {return false;}
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        Button collision = CollisionManager.Instance.getCollision(new Vector2(screenX, screenY));
-        new Vector2(screenX, ImageEditor.Instance._screenSize.y - screenY);
+        Vector2 worldPosition = new Vector2(screenX, ImageEditor.Instance._screenSize.y - screenY);
+        IClickable collision = CollisionManager.Instance.getClicked(worldPosition);
+   
         if(collision != null) {
-            collision.onPressed();
+            collision.onClickDown(worldPosition);
         }
         return true;
     }
-    public boolean touchUp(int screenX, int screenY, int pointer, int button) {return false;}
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        if (_currentlyClicked != null) { _currentlyClicked.onClickUp(new Vector2(screenX, ImageEditor.Instance._screenSize.y - screenY));
+            _currentlyClicked = null;
+        }
+        // if(_currentlyHovered != null) _currentlyHovered.onClickUp();
+        return false;
+    }
     public boolean touchCancelled(int screenX, int screenY, int pointer, int button) {return false;}
-    public boolean touchDragged(int screenX, int screenY, int pointer) {return false;}
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        mouseMoved(screenX, screenY);
+        if(_currentlyClicked != null)
+            _currentlyClicked.onClickDragged(new Vector2(screenX, ImageEditor.Instance._screenSize.y - screenY));
+        return false;
+    }
     public boolean mouseMoved(int screenX, int screenY) {
+        Vector2 worldPosition = new Vector2(screenX, ImageEditor.Instance._screenSize.y - screenY);
+        IHoverable collision = CollisionManager.Instance.getHovered(worldPosition);
+
+        if (collision != _currentlyHovered && _currentlyHovered != null) _currentlyHovered.onHoverExit();
+        if(collision != null) {
+            collision.onHovered();
+            _currentlyHovered = collision;
+        } 
         return true;
     }
     public boolean scrolled(float amountX, float amountY) {return false;}
