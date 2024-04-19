@@ -6,21 +6,27 @@ import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 
-public class editWindow extends Button implements IClickable{
+public class editWindow extends Rec2D implements IClickable{
     public Texture DoodleTexture;
-    private Pixmap _doodleMap;
+    public Pixmap _doodleMap;
     private Vector2 _previousPaintPosition;
+    
+    public static editWindow Instance;
+    
 
-    public editWindow(Vector2 scale, Vector2 position, Color backgroundColor) {
-        super(scale, position, backgroundColor);
+    public editWindow(Vector2 scale, Vector2 position) {
+        super(scale, position, Color.GRAY);
         _doodleMap = new Pixmap((int)scale.x, (int)scale.y, Format.RGBA8888);
         _doodleMap.setColor(Color.ORANGE);
         DoodleTexture = new Texture(_doodleMap);
         InputManager.Instance.Clickables.add(this);
+        
+        Instance = this;
+
     }
 
     private void paintAtPosition(Vector2 worldPosition) {
-        _doodleMap.drawLine(0, 0, 300, 300);
+        _doodleMap.drawPixel((int) (worldPosition.x - Position.x), (int) (Scale.y - worldPosition.y));
         Vector2 paintPosition = new Vector2(worldPosition.x - Position.x,Scale.y - worldPosition.y);
         int startX = (int) _previousPaintPosition.x;
         int startY = (int)_previousPaintPosition.y;
@@ -41,7 +47,6 @@ public class editWindow extends Button implements IClickable{
     public void onClickDown (Vector2 clickPosition) {
         if(_previousPaintPosition == null)
             _previousPaintPosition = new Vector2(clickPosition.x - Position.x,Scale.y - clickPosition.y);
-        super.onClickDown(clickPosition);
         paintAtPosition(clickPosition);
     }
 

@@ -1,18 +1,27 @@
 package com.mygdx.imageeditor;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Iterator;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
+import com.badlogic.gdx.math.Vector2;
 
 public class ImageInputOutput {
     public static ImageInputOutput Instance;
+    private byte[] _fileHeader;
+    private Pixmap _pixels;
     public ImageInputOutput() {
         Instance = this;
     }
 
-    public Pixmap loadImage(String filePath) {
+
+    public Pixmap loadImage(String filePath) {      
         byte[] filebytes = Gdx.files.internal(filePath).readBytes();
         int[] fileIntData = Util.unsignBytes(filebytes);
+
         if(filebytes[0] != 'B' || filebytes[1] != 'M') {
             System.out.println(filePath + " is NOT a bitmap image");
             return null;
@@ -29,10 +38,19 @@ public class ImageInputOutput {
         int bytesPerPixel = Util.bytesToInt(bitsPerPixel) / 8;
         if(bytesPerPixel != 3) {
             System.out.println("Unsupported image pixel format. Incorrect bits per pixel"); 
-        return null;
+            return null;
         }
 
+        _fileHeader = new byte [startPoint];
+
+        for (int i = 0; i < startPoint; i++) {
+            _fileHeader[i] = filebytes[i];
+        }
+
+
+
         Pixmap pixels = new Pixmap(width, height, Format.RGBA8888);
+        _pixels = pixels;
         int r,g,b;
         int x = 0, y = height;
         for(int i = startPoint; i < fileIntData.length - 3; i += 3) {
@@ -54,6 +72,44 @@ public class ImageInputOutput {
             }
         }
         return pixels;
+    }
+
+    public void saveImage(String filePath) throws IOException {
+        FileOutputStream output = new FileOutputStream(filePath);
+        byte[] color;
+        byte[] colorData = new byte [_pixels.getWidth()* _pixels.getHeight()*3];
+        int colorIndex = 0;
+        for(int y = _pixels.getHeight() - 1; y >= 0 ; y--) {
+            for(int x = 0; x < _pixels.getWidth(); x++) {
+                color = Util.intToSignedBytes(_pixels.getPixel(x, y));
+                colorData[colorIndex] = color[2];
+                colorData[colorIndex + 1] = color[1];
+                colorData[colorIndex + 2] = color[0];
+                colorIndex += 3;
+                int tempColor = _pixels.getPixel(x,y); 
+            }
+        }
+
+        Pixmap doodle = Util.scalePixmap(
+                editWindow.Instance._doodleMap, new Vector2(_pixels.getWidth(), _pixels.getHeight())
+                );
+        colorIndex = 0;
+        for(int y = doodle.getHeight() - 1; y >= 0; y--) {
+            for(int x = 0; x < doodle.getWidth(); x++) {
+                color = Util.intToSignedBytes(doodle.getPixel(x, y));
+                if(color[3] != -1 ) {colorIndex += 3; continue;
+                }
+                colorData[colorIndex] = color[2];
+                colorData[colorIndex + 1] = color[1];
+                colorData[colorIndex + 2] = color[0];
+                colorIndex += 3;
+            }
+        }
+        
+        
+        output.write(_fileHeader);
+        output.write(colorData);
+        output.close();
     }
 }
 
