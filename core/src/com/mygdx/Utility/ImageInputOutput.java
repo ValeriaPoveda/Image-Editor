@@ -1,4 +1,4 @@
-package com.mygdx.imageeditor;
+package com.mygdx.Utility;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -8,17 +8,28 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.math.Vector2;
+import com.mygdx.imageeditor.Util;
+import com.mygdx.imageeditor.editWindow;
 
 public class ImageInputOutput {
+    public String ImageFolderLocation ;
     public static ImageInputOutput Instance;
     private byte[] _fileHeader;
     private Pixmap _pixels;
     public ImageInputOutput() {
         Instance = this;
     }
-
-
-    public Pixmap loadImage(String filePath) {      
+    private String scrapeFolderLocation(String filePath) {
+        StringBuilder builder = new StringBuilder(filePath);
+        for(int i = filePath.length() - 1; i >= 0; i--) {
+        if(filePath.charAt(i) != '\\') continue;
+        return builder.substring(0,i);
+        }
+        return null;
+    }
+    
+    public Pixmap loadImage(String filePath) {     
+        ImageFolderLocation = scrapeFolderLocation(filePath);
         byte[] filebytes = Gdx.files.internal(filePath).readBytes();
         int[] fileIntData = Util.unsignBytes(filebytes);
 
@@ -111,6 +122,9 @@ public class ImageInputOutput {
         output.write(colorData);
         output.close();
     }
+    
+   
+    
 }
 
 

@@ -1,4 +1,4 @@
-package com.mygdx.imageeditor;
+package com.mygdx.Utility;
 import com.badlogic.gdx.Input.Keys;
 
 import java.io.IOException;
@@ -6,6 +6,8 @@ import java.io.IOException;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import com.mygdx.buttons.Button;
+import com.mygdx.imageeditor.ImageEditor;
 
 public class InputManager implements InputProcessor {
     public Array <Button> Buttons = new Array <Button>();
@@ -21,13 +23,18 @@ public class InputManager implements InputProcessor {
     }
 
     public boolean keyDown(int keycode) {
-        if(_controlPressed && keycode == Keys.S)
-        try {
-            ImageInputOutput.Instance.saveImage("C:\\Users\\59398\\Desktop\\output.bmp");
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+       if(_controlPressed && keycode == Keys.S) {
+           
+           if(ImageInputOutput.Instance.ImageFolderLocation == null) {
+               return false;
+           } else try {
+               ImageInputOutput.Instance.saveImage(ImageInputOutput.Instance.ImageFolderLocation+"\\output.bmp");
+           } catch (IOException e) {
+               // TODO Auto-generated catch block
+               e.printStackTrace();
+           }
+           
+       }
         if(keycode == Keys.CONTROL_LEFT) _controlPressed = true;
         return false;
         }
@@ -69,11 +76,14 @@ public class InputManager implements InputProcessor {
         Vector2 worldPosition = new Vector2(screenX, ImageEditor.Instance._screenSize.y - screenY);
         IHoverable collision = CollisionManager.Instance.getHovered(worldPosition);
 
-        if (collision != _currentlyHovered && _currentlyHovered != null) _currentlyHovered.onHoverExit();
+        if (_currentlyHovered != collision && _currentlyHovered != null) _currentlyHovered.onHoverExit();
         if(collision != null) {
             collision.onHovered();
             _currentlyHovered = collision;
         } 
+        if(collision != _currentlyHovered) {
+            _currentlyClicked = null;
+        }
         return true;
     }
     public boolean scrolled(float amountX, float amountY) {return false;}
